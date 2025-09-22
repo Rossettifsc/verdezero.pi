@@ -7,8 +7,7 @@
     <div class="vz-footer__main">
       <div class="vz-footer__brand">
         <div class="vz-footer__logo">
-          <img src="<?php echo h(BASE_URL); ?>assets/img/logo.svg" alt="VerdeZero" width="40" height="40">
-          <span>VerdeZero</span>
+          <img src="<?php echo h(BASE_URL); ?>assets/img/verdezero.logo.png" alt="VerdeZero" width="auto" height="40">
         </div>
         <p>Transformando vidas através do conhecimento e prática de hábitos saudáveis. Sem promessas milagrosas, apenas ciência e dedicação.</p>
         <div class="vz-footer__social">
