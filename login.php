@@ -253,6 +253,40 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         </div>
       </div>
 
+      <!-- Área do Criador -->
+      <div class="vz-profile-section">
+        <div class="vz-profile-section__header">
+          <h2>
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path>
+            </svg>
+            Área do Criador
+          </h2>
+          <p>Gerencie seus ebooks e conteúdo</p>
+        </div>
+        
+        <div class="vz-quick-actions">
+          <a href="<?php echo h(BASE_URL); ?>postar-ebooks.php" class="vz-quick-action">
+            <div class="vz-quick-action__icon">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path>
+                <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path>
+              </svg>
+            </div>
+            <div class="vz-quick-action__content">
+              <h3>Postar Ebooks</h3>
+              <p>Compartilhe seu conhecimento com o mundo</p>
+            </div>
+            <div class="vz-quick-action__arrow">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M5 12h14"></path>
+                <path d="m12 5 7 7-7 7"></path>
+              </svg>
+            </div>
+          </a>
+        </div>
+      </div>
+
       <!-- Ações Rápidas -->
       <div class="vz-profile-section">
         <div class="vz-profile-section__header">

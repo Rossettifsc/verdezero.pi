@@ -1929,3 +1929,366 @@ img {
     max-width: 200px;
   }
 }
+
+.vz-ebook-page {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+}
+
+.vz-ebook-hero {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  padding: 60px 20px;
+  text-align: center;
+}
+
+.vz-ebook-hero__content h1 {
+  font-size: 2.5rem;
+  margin-bottom: 10px;
+  font-weight: 700;
+}
+
+.vz-ebook-hero__content p {
+  font-size: 1.1rem;
+  opacity: 0.9;
+}
+
+.vz-ebook-content {
+  max-width: 1200px;
+  margin: -40px auto 40px;
+  padding: 0 20px;
+}
+
+.vz-ebook-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 30px;
+  margin-bottom: 40px;
+}
+
+@media (max-width: 768px) {
+  .vz-ebook-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.vz-ebook-section {
+  background: white;
+  border-radius: 12px;
+  padding: 30px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+}
+
+.vz-ebook-section__header {
+  margin-bottom: 30px;
+  border-bottom: 2px solid #f0f0f0;
+  padding-bottom: 20px;
+}
+
+.vz-ebook-section__header h2 {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 1.5rem;
+  color: #333;
+  margin-bottom: 8px;
+}
+
+.vz-ebook-section__header h2 svg {
+  color: #667eea;
+}
+
+.vz-ebook-section__header p {
+  color: #999;
+  font-size: 0.95rem;
+}
+
+.vz-ebook-form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.vz-form__row {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.vz-form__row label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 600;
+  color: #333;
+  font-size: 0.95rem;
+}
+
+.vz-form__row label svg {
+  color: #667eea;
+  flex-shrink: 0;
+}
+
+.vz-form__row input,
+.vz-form__row textarea,
+.vz-form__row select {
+  padding: 12px;
+  border: 2px solid #e0e0e0;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  font-family: inherit;
+  transition: all 0.3s ease;
+}
+
+.vz-form__row input:focus,
+.vz-form__row textarea:focus,
+.vz-form__row select:focus {
+  outline: none;
+  border-color: #667eea;
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.vz-form__row textarea {
+  resize: vertical;
+  min-height: 120px;
+}
+
+.vz-form__help {
+  font-size: 0.85rem;
+  color: #999;
+}
+
+.vz-form__optional {
+  color: #999;
+  font-weight: normal;
+}
+
+.vz-form__actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 10px;
+}
+
+.vz-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px 24px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: 0.95rem;
+}
+
+.vz-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+}
+
+.vz-btn--secondary {
+  background: #f0f0f0;
+  color: #333;
+  flex: 1;
+}
+
+.vz-btn--secondary:hover {
+  background: #e0e0e0;
+}
+
+.vz-btn--danger {
+  background: #ff6b6b;
+  flex: 1;
+}
+
+.vz-btn--danger:hover {
+  background: #ff5252;
+}
+
+.vz-btn--full {
+  width: 100%;
+}
+
+.vz-file-upload {
+  position: relative;
+  border: 2px dashed #667eea;
+  border-radius: 8px;
+  padding: 30px;
+  text-align: center;
+  background: #f8f9ff;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.vz-file-upload:hover {
+  border-color: #764ba2;
+  background: #f0f0ff;
+}
+
+.vz-file-upload input[type="file"] {
+  position: absolute;
+  opacity: 0;
+  width: 100%;
+  height: 100%;
+  cursor: pointer;
+}
+
+.vz-file-upload__hint {
+  color: #999;
+  font-size: 0.85rem;
+  margin-top: 8px;
+}
+
+.vz-alert {
+  padding: 16px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+  display: flex;
+  gap: 12px;
+}
+
+.vz-alert--danger {
+  background: #ffe0e0;
+  border: 1px solid #ff6b6b;
+  color: #d32f2f;
+}
+
+.vz-alert--success {
+  background: #e0ffe0;
+  border: 1px solid #51cf66;
+  color: #2f7c31;
+}
+
+.vz-alert__icon {
+  flex-shrink: 0;
+}
+
+.vz-alert__icon svg {
+  color: currentColor;
+}
+
+.vz-alert__content p {
+  margin: 0;
+  font-size: 0.95rem;
+}
+
+.vz-empty-state {
+  text-align: center;
+  padding: 60px 20px;
+  color: #999;
+}
+
+.vz-empty-state svg {
+  color: #ddd;
+  margin-bottom: 20px;
+}
+
+.vz-empty-state h3 {
+  color: #333;
+  margin-bottom: 10px;
+}
+
+.vz-ebook-list {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.vz-ebook-card {
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+.vz-ebook-card:hover {
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+  border-color: #667eea;
+}
+
+.vz-ebook-card__header {
+  display: flex;
+  gap: 16px;
+  padding: 20px;
+  background: #f8f9fa;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.vz-ebook-card__icon {
+  flex-shrink: 0;
+  width: 50px;
+  height: 50px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+}
+
+.vz-ebook-card__info {
+  flex: 1;
+}
+
+.vz-ebook-card__info h3 {
+  margin: 0 0 4px 0;
+  color: #333;
+  font-size: 1.1rem;
+}
+
+.vz-ebook-card__author {
+  margin: 0;
+  color: #999;
+  font-size: 0.9rem;
+}
+
+.vz-ebook-card__body {
+  padding: 20px;
+}
+
+.vz-ebook-card__description {
+  margin: 0 0 12px 0;
+  color: #666;
+  line-height: 1.5;
+}
+
+.vz-ebook-card__meta {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.vz-badge {
+  display: inline-block;
+  padding: 4px 12px;
+  background: #f0f0f0;
+  color: #667eea;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.vz-ebook-card__date {
+  color: #999;
+  font-size: 0.85rem;
+}
+
+.vz-ebook-card__footer {
+  padding: 16px 20px;
+  background: #f8f9fa;
+  border-top: 1px solid #e0e0e0;
+  display: flex;
+  gap: 12px;
+}
+
+.vz-ebook-card__footer a,
+.vz-ebook-card__footer button {
+  flex: 1;
+}
+
+
+<?php require_once __DIR__ . '/includes/footer.php'; ?>

@@ -13,7 +13,7 @@ $ebooks = get_ebooks('receitas');
       <div class="vz-ebook__actions">
         <span class="vz-price"><?php echo h(cents_to_brl((int)$e['price_cents'])); ?></span>
         <button class="vz-fav" data-id="<?php echo (int)$e['id']; ?>">❤</button>
-        <button class="vz-btn">Comprar</button>
+        <a href='https://go.hotmart.com/B102515237N'><button class="vz-btn">Comprar</button></a>
       </div>
     </div>
   </article>
