@@ -36,6 +36,7 @@ require_once __DIR__ . '/db.php';
   
   <nav class="vz-nav" role="navigation" aria-label="Menu principal">
     <a href="<?php echo h(BASE_URL); ?>ebooks.php">Ebooks</a>
+
     <a href="<?php echo h(BASE_URL); ?>receitas.php">Receitas</a>
     <a href="<?php echo h(BASE_URL); ?>exercicios.php">Exercícios</a>
     <a href="<?php echo h(BASE_URL); ?>imc.php">IMC</a>

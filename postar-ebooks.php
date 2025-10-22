@@ -21,58 +21,91 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $description = trim($_POST['description'] ?? '');
         $author = trim($_POST['author'] ?? '');
         $category = trim($_POST['category'] ?? '');
-        $file = $_FILES['file'] ?? null;
+        $file = $_FILES["file"] ?? null;
+        $cover_image = $_FILES["cover_image"] ?? null;
         
-        // Validação básica
+        // Validação básica dos campos de texto e presença dos arquivos
         if ($title === '' || $description === '' || $author === '' || $category === '') {
             $errors[] = 'Preencha todos os campos obrigatórios.';
-        } elseif (!$file || $file['error'] !== UPLOAD_ERR_OK) {
-            $errors[] = 'Erro ao fazer upload do arquivo. Tente novamente.';
         } else {
-            // Validar tipo de arquivo (apenas PDF)
-            $file_type = mime_content_type($file['tmp_name']);
-            if ($file_type !== 'application/pdf') {
-                $errors[] = 'Apenas arquivos PDF são permitidos.';
-            } elseif ($file['size'] > 50 * 1024 * 1024) { // 50MB
-                $errors[] = 'O arquivo não pode exceder 50MB.';
+            // Validação do arquivo do e-book
+            if (!$file || $file['error'] !== UPLOAD_ERR_OK) {
+                $errors[] = 'Erro ao fazer upload do arquivo do e-book. Tente novamente.';
             } else {
-                // Criar diretório de uploads se não existir
+                $file_type = mime_content_type($file['tmp_name']);
+                if ($file_type !== 'application/pdf') {
+                    $errors[] = 'Apenas arquivos PDF são permitidos para o e-book.';
+                } elseif ($file['size'] > 50 * 1024 * 1024) { // 50MB
+                    $errors[] = 'O arquivo do e-book não pode exceder 50MB.';
+                }
+            }
+
+            // Validação da imagem de capa
+            if (!$cover_image || $cover_image['error'] !== UPLOAD_ERR_OK) {
+                $errors[] = 'Erro ao fazer upload da imagem de capa. Tente novamente.';
+            } else {
+                $cover_type = mime_content_type($cover_image['tmp_name']);
+                if (!in_array($cover_type, ['image/jpeg', 'image/png', 'image/gif', 'image/webp'])) {
+                    $errors[] = 'Apenas imagens (JPG, PNG, GIF, WEBP) são permitidas para a capa.';
+                } elseif ($cover_image['size'] > 5 * 1024 * 1024) { // 5MB
+                    $errors[] = 'A imagem de capa não pode exceder 5MB.';
+                }
+            }
+
+            // Se não houver erros, prosseguir com o upload e salvamento no DB
+            if (empty($errors)) {
+                // Criar diretórios de uploads se não existirem
                 $upload_dir = __DIR__ . '/uploads/ebooks/';
+                $cover_upload_dir = __DIR__ . '/uploads/covers/';
+
                 if (!is_dir($upload_dir)) {
                     mkdir($upload_dir, 0755, true);
                 }
+                if (!is_dir($cover_upload_dir)) {
+                    mkdir($cover_upload_dir, 0755, true);
+                }
                 
-                // Gerar nome único para o arquivo
+                // Gerar nome único para o arquivo do e-book
                 $file_extension = pathinfo($file['name'], PATHINFO_EXTENSION);
                 $file_name = uniqid('ebook_', true) . '.' . $file_extension;
-                $file_path = $upload_dir . $file_name;
+                $file_path_full = $upload_dir . $file_name;
+
+                // Gerar nome único para o arquivo de capa
+                $cover_extension = pathinfo($cover_image['name'], PATHINFO_EXTENSION);
+                $cover_name = uniqid('cover_', true) . '.' . $cover_extension;
+                $cover_path_full = $cover_upload_dir . $cover_name;
                 
-                // Mover arquivo
-                if (move_uploaded_file($file['tmp_name'], $file_path)) {
+                // Mover arquivo do e-book e capa
+                if (move_uploaded_file($file['tmp_name'], $file_path_full) && move_uploaded_file($cover_image['tmp_name'], $cover_path_full)) {
                     // Inserir no banco de dados
                     if ($conn) {
                         $stmt = $conn->prepare('
-                            INSERT INTO user_ebooks (user_id, title, description, author, category, file_path, created_at)
-                            VALUES (?, ?, ?, ?, ?, ?, NOW())
+                            INSERT INTO user_ebooks (user_id, title, description, author, category, file_path, cover_path, created_at)
+                            VALUES (?, ?, ?, ?, ?, ?, ?, NOW())
                         ');
                         if ($stmt) {
-                            $stmt->bind_param('isssss', $user_id, $title, $description, $author, $category, $file_name);
+                            $full_file_path_for_db = 'uploads/ebooks/' . $file_name;
+                            $full_cover_path_for_db = 'uploads/covers/' . $cover_name;
+                            $stmt->bind_param('issssss', $user_id, $title, $description, $author, $category, $full_file_path_for_db, $full_cover_path_for_db);
                             if ($stmt->execute()) {
                                 $success = 'Ebook postado com sucesso!';
                             } else {
                                 $errors[] = 'Erro ao salvar no banco de dados: ' . $stmt->error;
-                                unlink($file_path); // Remover arquivo se falhar
+                                unlink($file_path_full); // Remover arquivo se falhar
+                                unlink($cover_path_full); // Remover capa se falhar
                             }
                         } else {
                             $errors[] = 'Erro ao preparar a consulta: ' . $conn->error;
-                            unlink($file_path);
+                            unlink($file_path_full);
+                            unlink($cover_path_full);
                         }
                     } else {
                         $errors[] = 'Conexão com banco de dados não disponível.';
-                        unlink($file_path);
+                        unlink($file_path_full);
+                        unlink($cover_path_full);
                     }
                 } else {
-                    $errors[] = 'Erro ao fazer upload do arquivo.';
+                    $errors[] = 'Erro ao fazer upload do arquivo ou da capa.';
                 }
             }
         }
@@ -81,7 +114,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         
         if ($ebook_id > 0 && $conn) {
             // Buscar ebook para verificar propriedade e obter caminho do arquivo
-            $stmt = $conn->prepare('SELECT file_path FROM user_ebooks WHERE id = ? AND user_id = ?');
+            $stmt = $conn->prepare('SELECT file_path, cover_path FROM user_ebooks WHERE id = ? AND user_id = ?');
             if ($stmt) {
                 $stmt->bind_param('ii', $ebook_id, $user_id);
                 $stmt->execute();
@@ -90,9 +123,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 
                 if ($ebook) {
                     // Deletar arquivo
-                    $file_path = __DIR__ . '/uploads/ebooks/' . $ebook['file_path'];
+                    $file_path = __DIR__ . '/' . $ebook['file_path'];
+                    $cover_path = __DIR__ . '/' . $ebook['cover_path'];
+
                     if (file_exists($file_path)) {
                         unlink($file_path);
+                    }
+                    if (file_exists($cover_path)) {
+                        unlink($cover_path);
                     }
                     
                     // Deletar do banco de dados
@@ -117,7 +155,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 $user_ebooks = [];
 if ($conn) {
     $stmt = $conn->prepare('
-        SELECT id, title, description, author, category, created_at, file_path
+        SELECT id, title, description, author, category, created_at, file_path, cover_path
         FROM user_ebooks
         WHERE user_id = ?
         ORDER BY created_at DESC
@@ -223,11 +261,6 @@ if ($conn) {
               <option value="">Selecione uma categoria</option>
               <option value="receitas">Receitas</option>
               <option value="exercicios">Exercícios</option>
-              <option value="saude">Saúde</option>
-              <option value="bem-estar">Bem-estar</option>
-              <option value="sustentabilidade">Sustentabilidade</option>
-              <option value="educacao">Educação</option>
-              <option value="outro">Outro</option>
             </select>
           </div>
 
@@ -257,6 +290,21 @@ if ($conn) {
             </div>
           </div>
 
+          <div class="vz-form__row">
+            <label for="cover_image">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                <polyline points="17 8 12 3 7 8"></polyline>
+                <line x1="12" y1="3" x2="12" y2="15"></line>
+              </svg>
+              Imagem de Capa (JPG, PNG, GIF, WEBP)
+            </label>
+            <div class="vz-file-upload">
+              <input type="file" id="cover_image" name="cover_image" accept="image/jpeg,image/png,image/gif,image/webp" required>
+              <div class="vz-file-upload__hint">Máximo 5MB</div>
+            </div>
+          </div>
+
           <div class="vz-form__actions">
             <button class="vz-btn" type="submit">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -275,105 +323,49 @@ if ($conn) {
         <div class="vz-ebook-section__header">
           <h2>
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <circle cx="12" cy="12" r="10"></circle>
-              <polyline points="12,6 12,12 16,14"></polyline>
+              <polyline points="4 7 4 4 20 4 20 7"></polyline>
+              <line x1="9" y1="20" x2="15" y2="20"></line>
+              <line x1="12" y1="17" x2="12" y2="20"></line>
+              <path d="M18 20v-2a3 3 0 0 0-3-3H9a3 3 0 0 0-3 3v2"></path>
+              <path d="M7 4v20h10V4"></path>
+              <line x1="12" y1="12" x2="12" y2="12"></line>
             </svg>
-            Meus Ebooks
+            Meus Ebooks Postados
           </h2>
-          <p>Ebooks que você já postou</p>
+          <p>Gerencie os ebooks que você compartilhou</p>
         </div>
 
-        <?php if (empty($user_ebooks)): ?>
-          <div class="vz-empty-state">
-            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path>
-              <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path>
-            </svg>
-            <h3>Nenhum ebook postado ainda</h3>
-            <p>Comece a compartilhar seu conhecimento postando seu primeiro ebook!</p>
-          </div>
-        <?php else: ?>
+        <?php if (!empty($user_ebooks)): ?>
           <div class="vz-ebook-list">
             <?php foreach ($user_ebooks as $ebook): ?>
-              <div class="vz-ebook-card">
-                <div class="vz-ebook-card__header">
-                  <div class="vz-ebook-card__icon">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                      <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path>
-                      <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path>
-                    </svg>
-                  </div>
-                  <div class="vz-ebook-card__info">
-                    <h3><?php echo h($ebook['title']); ?></h3>
-                    <p class="vz-ebook-card__author">Por <?php echo h($ebook['author']); ?></p>
-                  </div>
+              <div class="vz-ebook-item">
+                <div class="vz-ebook-item__cover">
+                  <img src="<?php echo h(BASE_URL . $ebook['cover_path']); ?>" alt="Capa: <?php echo h($ebook['title']); ?>">
                 </div>
-
-                <div class="vz-ebook-card__body">
-                  <p class="vz-ebook-card__description"><?php echo h(substr($ebook['description'], 0, 150)) . (strlen($ebook['description']) > 150 ? '...' : ''); ?></p>
-                  <div class="vz-ebook-card__meta">
-                    <span class="vz-badge"><?php echo h($ebook['category']); ?></span>
-                    <span class="vz-ebook-card__date"><?php echo date('d/m/Y', strtotime($ebook['created_at'])); ?></span>
+                <div class="vz-ebook-item__details">
+                  <h3><?php echo h($ebook['title']); ?></h3>
+                  <p><strong>Autor:</strong> <?php echo h($ebook['author']); ?></p>
+                  <p><strong>Categoria:</strong> <?php echo h(ucfirst($ebook['category'])); ?></p>
+                  <p class="vz-meta">Postado em: <?php echo date('d/m/Y', strtotime($ebook['created_at'])); ?></p>
+                  <div class="vz-ebook-item__actions">
+                    <a href="<?php echo h(BASE_URL . $ebook['file_path']); ?>" class="vz-btn vz-btn--small" download>Baixar PDF</a>
+                    <form action="" method="post" onsubmit="return confirm('Tem certeza que deseja deletar este ebook?');">
+                      <input type="hidden" name="action" value="delete_ebook">
+                      <input type="hidden" name="ebook_id" value="<?php echo (int)$ebook['id']; ?>">
+                      <button type="submit" class="vz-btn vz-btn--small vz-btn--danger">Deletar</button>
+                    </form>
                   </div>
-                </div>
-
-                <div class="vz-ebook-card__footer">
-                  <a href="<?php echo h(BASE_URL); ?>uploads/ebooks/<?php echo h($ebook['file_path']); ?>" class="vz-btn vz-btn--secondary" download>
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                      <polyline points="7 10 12 15 17 10"></polyline>
-                      <line x1="12" y1="15" x2="12" y2="3"></line>
-                    </svg>
-                    Download
-                  </a>
-                  <form method="post" style="display: inline; flex: 1;">
-                    <input type="hidden" name="action" value="delete_ebook">
-                    <input type="hidden" name="ebook_id" value="<?php echo (int)$ebook['id']; ?>">
-                    <button type="submit" class="vz-btn vz-btn--danger" onclick="return confirm('Tem certeza que deseja deletar este ebook?');" style="width: 100%;">
-                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <polyline points="3 6 5 6 21 6"></polyline>
-                        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
-                        <line x1="10" y1="11" x2="10" y2="17"></line>
-                        <line x1="14" y1="11" x2="14" y2="17"></line>
-                      </svg>
-                      Deletar
-                    </button>
-                  </form>
                 </div>
               </div>
             <?php endforeach; ?>
           </div>
+        <?php else: ?>
+          <p>Você ainda não postou nenhum ebook.</p>
         <?php endif; ?>
       </div>
     </div>
   </div>
 </section>
-
-<?php else: ?>
-<!-- PÁGINA DE LOGIN NECESSÁRIO -->
-<section class="vz-auth-page">
-  <div class="vz-auth-hero">
-    <div class="vz-auth-hero__content">
-      <h1>Acesso Restrito</h1>
-      <p>Você precisa estar logado para acessar a Área do Criador</p>
-    </div>
-  </div>
-
-  <div class="vz-auth-content">
-    <div class="vz-auth-card" style="max-width: 400px; margin: 0 auto;">
-      <div class="vz-auth-card__header">
-        <h2>Faça Login</h2>
-        <p>Acesse sua conta para começar a compartilhar ebooks</p>
-      </div>
-      
-      <a href="<?php echo h(BASE_URL); ?>index.php" class="vz-btn vz-btn--full">
-        Ir para Login
-      </a>
-    </div>
-  </div>
-
 <?php endif; ?>
-</section>
+
 <?php require_once __DIR__ . '/includes/footer.php'; ?>
-
-

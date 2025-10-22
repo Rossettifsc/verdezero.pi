@@ -2290,5 +2290,66 @@ img {
   flex: 1;
 }
 
-
-<?php require_once __DIR__ . '/includes/footer.php'; ?>
+ .vz-ebook-card {
+            border: 1px solid var(--vz-color-gray-200);
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 16px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            background-color: var(--vz-color-white);
+        }
+        .vz-ebook-card h2 {
+            margin-top: 0;
+            color: var(--vz-color-primary-700);
+            font-size: 1.5em;
+        }
+        .vz-ebook-card p {
+            color: var(--vz-color-gray-600);
+            line-height: 1.5;
+        }
+        .vz-ebook-card .vz-meta {
+            font-size: 0.9em;
+            color: var(--vz-color-gray-500);
+            margin-bottom: 10px;
+        }
+        .vz-ebook-card .download-button {
+            display: inline-block;
+            background-color: var(--vz-color-primary-500);
+            color: white;
+            padding: 10px 15px;
+            text-decoration: none;
+            border-radius: 5px;
+            font-weight: bold;
+            margin-top: 10px;
+            transition: background-color 0.3s ease;
+        }
+        .vz-ebook-card .download-button:hover {
+            background-color: var(--vz-color-primary-600);
+        }
+        .no-ebooks-message {
+            color: var(--vz-color-gray-700);
+            font-size: 1.1em;
+            text-align: center;
+            padding: 20px;
+            border: 1px dashed var(--vz-color-gray-300);
+            border-radius: 8px;
+            margin-top: 30px;
+        }
+        .vz-page-title {
+            padding: 20px 0;
+            text-align: center;
+            background-color: var(--vz-color-gray-100);
+            margin-bottom: 20px;
+        }
+        .vz-page-title h1 {
+            margin: 0;
+            color: var(--vz-color-primary-800);
+        }
+        .vz-grid-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            padding: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }

@@ -40,20 +40,50 @@ function h($str) {
 // Recupera lista de ebooks; se o DB falhar, usa dados de exemplo.
 function get_ebooks(?string $category = null): array {
     $conn = db();
+    $all_ebooks = [];
+
     if ($conn) {
+        // Buscar ebooks da tabela principal 'ebooks'
+        $query_ebooks = "SELECT id, title, author, price_cents, category, cover_path, featured, promo, redirect_link, 'original' as source FROM ebooks";
         if ($category) {
-            $stmt = $conn->prepare('SELECT id, title, author, price_cents, category, cover_path, featured, promo FROM ebooks WHERE category = ? ORDER BY featured DESC, id DESC');
-            $stmt->bind_param('s', $category);
-        } else {
-            $stmt = $conn->prepare('SELECT id, title, author, price_cents, category, cover_path, featured, promo FROM ebooks ORDER BY featured DESC, id DESC');
+            $query_ebooks .= " WHERE category = ?";
         }
-        $stmt->execute();
-        $res = $stmt->get_result();
-        $rows = [];
-        while ($row = $res->fetch_assoc()) {
-            $rows[] = $row;
+        $query_ebooks .= " ORDER BY featured DESC, id DESC";
+
+        $stmt_ebooks = $conn->prepare($query_ebooks);
+        if ($category) {
+            $stmt_ebooks->bind_param("s", $category);
         }
-        return $rows;
+        $stmt_ebooks->execute();
+        $res_ebooks = $stmt_ebooks->get_result();
+        while ($row = $res_ebooks->fetch_assoc()) {
+            $all_ebooks[] = $row;
+        }
+
+        // Buscar ebooks da tabela 'user_ebooks'
+        $query_user_ebooks = "SELECT id, title, author, 0 as price_cents, category, cover_path, 0 as featured, 0 as promo, 'user' as source, file_path FROM user_ebooks";
+        if ($category) {
+            $query_user_ebooks .= " WHERE category = ?";
+        }
+        $query_user_ebooks .= " ORDER BY created_at DESC";
+
+        $stmt_user_ebooks = $conn->prepare($query_user_ebooks);
+        if ($category) {
+            $stmt_user_ebooks->bind_param("s", $category);
+        }
+        $stmt_user_ebooks->execute();
+        $res_user_ebooks = $stmt_user_ebooks->get_result();
+        while ($row = $res_user_ebooks->fetch_assoc()) {
+            $all_ebooks[] = $row;
+        }
+
+        // Ordenar a lista combinada (opcional, pode-se manter a ordem de cada consulta)
+        // Exemplo de ordenação por título:
+        // usort($all_ebooks, function($a, $b) {
+        //     return strcmp($a["title"], $b["title"]);
+        // });
+
+        return $all_ebooks;
     }
 
     // Fallback estático
